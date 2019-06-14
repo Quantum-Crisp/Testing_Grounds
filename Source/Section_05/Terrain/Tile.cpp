@@ -43,8 +43,9 @@ void ATile::BeginPlay()
 void ATile::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
 	Super::EndPlay(EndPlayReason);
-	
-	Pool->Return(NavMeshBoundsVolume);
+
+	if(Pool != nullptr && NavMeshBoundsVolume != nullptr)
+		Pool->Return(NavMeshBoundsVolume);
 }
 // Called every frame
 void ATile::Tick(float DeltaTime)
@@ -94,12 +95,11 @@ void ATile::PlaceActor(TSubclassOf<AActor> ToSpawn, FSpawnPosition SpawnPos)
 // Function that places the AI within the scene, and handles its variables / properties.
 void ATile::PlaceActor(TSubclassOf<APawn> ToSpawn, FSpawnPosition SpawnPos)
 {
-	APawn* SpawnedObj = GetWorld()->SpawnActor<APawn>(ToSpawn); //Spawn the desired actor
+	FRotator Rotation = FRotator(0.f, SpawnPos.YawRotation, 0.f);
+	APawn* SpawnedObj = GetWorld()->SpawnActor<APawn>(ToSpawn, SpawnPos.Location, Rotation); //Spawn the desired actor
 	if (SpawnedObj)
 	{
-		SpawnedObj->SetActorRelativeLocation(SpawnPos.Location); //Set the location of said actor in the randomly generated position
 		SpawnedObj->AttachToActor(this, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false)); //Attach the actor to the tile.
-		SpawnedObj->SetActorRotation(FRotator(0.f, SpawnPos.YawRotation, 0.f)); //Apply the random amount of rotation
 		SpawnedObj->SpawnDefaultController(); //Attach AI Controller to it.
 		SpawnedObj->Tags.Add(FName("Enemy")); //Add appropriate tags to AI.
 	}
